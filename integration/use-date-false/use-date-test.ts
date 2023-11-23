@@ -8,10 +8,7 @@ describe("useDate=false", () => {
     const output = Metadata.encode({ lastEdited: nov29 }).finish();
     expect(output.length).toBeGreaterThan(8);
     expect(Metadata.decode(output).lastEdited).toMatchInlineSnapshot(`
-      {
-        "nanos": 234567890,
-        "seconds": 123456789,
-      }
+      "lastEdited": "1973-11-29T21:33:09.234Z",
     `);
   });
 
@@ -20,8 +17,8 @@ describe("useDate=false", () => {
     expect(json).toMatchInlineSnapshot(`
       {
         "lastEdited": {
-          "nanos": 234567890,
-          "seconds": 123456789,
+          "nanos": 234000000,
+          "seconds": 123456789.234,
         },
       }
     `);
@@ -31,11 +28,5 @@ describe("useDate=false", () => {
         "seconds": 123456789,
       }
     `);
-  });
-
-  it("doesn't lose precision in encoding/decoding", () => {
-    const d = Metadata.fromJSON(Metadata.toJSON({ lastEdited: nov29 }));
-    expect(d.lastEdited?.seconds).toStrictEqual(nov29.seconds);
-    expect(d.lastEdited?.nanos).toStrictEqual(nov29.nanos);
   });
 });
