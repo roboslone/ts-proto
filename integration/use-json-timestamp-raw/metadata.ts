@@ -5,7 +5,7 @@ import { Timestamp } from "./google/protobuf/timestamp";
 export const protobufPackage = "";
 
 export interface Metadata {
-  lastEdited: Timestamp | undefined;
+  lastEdited: Date | undefined;
 }
 
 function createBaseMetadata(): Metadata {
@@ -15,7 +15,7 @@ function createBaseMetadata(): Metadata {
 export const Metadata = {
   encode(message: Metadata, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
     if (message.lastEdited !== undefined) {
-      Timestamp.encode(message.lastEdited, writer.uint32(10).fork()).ldelim();
+      Timestamp.encode(toTimestamp(message.lastEdited), writer.uint32(10).fork()).ldelim();
     }
     return writer;
   },
@@ -32,7 +32,7 @@ export const Metadata = {
             break;
           }
 
-          message.lastEdited = Timestamp.decode(reader, reader.uint32());
+          message.lastEdited = fromTimestamp(Timestamp.decode(reader, reader.uint32()));
           continue;
       }
       if ((tag & 7) === 4 || tag === 0) {
@@ -50,7 +50,7 @@ export const Metadata = {
   toJSON(message: Metadata): unknown {
     const obj: any = {};
     if (message.lastEdited !== undefined) {
-      obj.lastEdited = message.lastEdited;
+      obj.lastEdited = message.lastEdited.toISOString();
     }
     return obj;
   },
@@ -60,9 +60,7 @@ export const Metadata = {
   },
   fromPartial<I extends Exact<DeepPartial<Metadata>, I>>(object: I): Metadata {
     const message = createBaseMetadata();
-    message.lastEdited = (object.lastEdited !== undefined && object.lastEdited !== null)
-      ? Timestamp.fromPartial(object.lastEdited)
-      : undefined;
+    message.lastEdited = object.lastEdited ?? undefined;
     return message;
   },
 };
@@ -85,13 +83,19 @@ function toTimestamp(date: Date): Timestamp {
   return { seconds, nanos };
 }
 
-function fromJsonTimestamp(o: any): Timestamp {
+function fromTimestamp(t: Timestamp): Date {
+  let millis = (t.seconds || 0) * 1_000;
+  millis += (t.nanos || 0) / 1_000_000;
+  return new globalThis.Date(millis);
+}
+
+function fromJsonTimestamp(o: any): Date {
   if (o instanceof globalThis.Date) {
-    return toTimestamp(o);
+    return o;
   } else if (typeof o === "string") {
-    return toTimestamp(new globalThis.Date(o));
+    return new globalThis.Date(o);
   } else {
-    return Timestamp.fromJSON(o);
+    return fromTimestamp(Timestamp.fromJSON(o));
   }
 }
 
